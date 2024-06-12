@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors')
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = 5000;
 
@@ -30,9 +30,16 @@ async function run() {
 
     // Get all events
     app.get('/events', async(req, res) => {
-        const eventData = eventCollection.find();
-        const result = await eventData.toArray();
+        const events = eventCollection.find();
+        const result = await events.toArray();
         res.send(result.reverse());
+    })
+
+    // Get single event
+    app.get('/events/:id', async(req, res) => {
+      const id = req.params.id;
+      const event = await eventCollection.findOne({_id: new ObjectId(id)});
+      res.send(event);
     })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
