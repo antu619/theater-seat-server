@@ -23,8 +23,10 @@ async function run() {
     await client.connect();
     const events = client.db("events");
     const bookings = client.db("bookings");
+    const users = client.db("users");
     const eventCollection = events.collection("eventCollection");
     const bookingsCollection = bookings.collection("bookingsCollection");
+    const userCollection = users.collection("userCollection");
 
     // Get all events
     app.get("/events", async (req, res) => {
@@ -45,7 +47,7 @@ async function run() {
       const email = req.query.email;
       const query = { email: email };
       const result = await bookingsCollection.find(query).toArray();
-      res.send(result);
+      res.send(result.reverse());
     });
 
     // post bookings
@@ -65,6 +67,20 @@ async function run() {
       );
       res.send(data);
     });
+
+    // save user into db
+    app.post('/users', async(req, res) => {
+      const user = req.body;
+      const isExist = await userCollection.findOne({email: user?.email});
+      if(isExist?._id){
+        return res.send({
+          status: '200',
+          message: 'Already in db'
+        });
+      }
+      const result = userCollection.insertOne(user);
+      res.send(result);
+    })
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
