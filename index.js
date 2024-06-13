@@ -26,7 +26,9 @@ async function run() {
   try {
     await client.connect();
     const events = client.db("events");
+    const bookings = client.db("bookings");
     const eventCollection = events.collection("eventCollection");
+    const bookingsCollection = bookings.collection("bookingsCollection");
 
     // Get all events
     app.get('/events', async(req, res) => {
@@ -42,6 +44,24 @@ async function run() {
       res.send(event);
     })
 
+    // post bookings
+    app.post('/bookings', async(req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result)
+    })
+
+    // Update event available tickets
+    app.patch('/events/:id', async(req, res) => {
+      const id = req.params.id;
+      const updatedDoc = req.body;
+      const data = await eventCollection.updateOne(
+        {_id: new ObjectId(id)},
+        {$set: updatedDoc}
+      );
+      res.send(data);
+    })
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   }
@@ -50,9 +70,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Theater Seat Server.')
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Theater Seat server running on port ${port}`)
 })
