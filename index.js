@@ -28,7 +28,7 @@ function verifyJWT(req, res, next){
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.TOKEN_SECRET, function(error, decoded){
     if(error){
-      return res.status(403).send({message: 'forbidden access'})
+      return res.status(403).send({status: 403})
     }
     req.decoded = decoded;
     next();
@@ -51,7 +51,7 @@ async function run() {
       const query = {email}
       const user = await userCollection.findOne(query);
       if(user){
-        const token = jwt.sign({email}, process.env.TOKEN_SECRET, {expiresIn: '1h'})
+        const token = jwt.sign({email}, process.env.TOKEN_SECRET, {expiresIn: '7d'})
         return res.send({token: token})
       }
       res.status(403).send({token: 'token not found'})
@@ -62,6 +62,13 @@ async function run() {
       const events = eventCollection.find();
       const result = await events.toArray();
       res.send(result.reverse());
+    });
+
+     // Upload a event
+     app.post("/events", verifyJWT, async (req, res) => {
+      const event = req.body;
+      const result = await eventCollection.insertOne(event);
+      res.send(result);
     });
 
     // Get single event
