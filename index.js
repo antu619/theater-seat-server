@@ -71,6 +71,17 @@ async function run() {
       res.send(result);
     });
 
+    // update a post
+    app.patch("/events/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const updatedDoc = req.body;
+      const event = await eventCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedDoc }
+      );
+      res.send(event);
+    });
+
     // Get single event
     app.get("/events/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
